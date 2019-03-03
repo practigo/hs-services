@@ -1,8 +1,11 @@
+service = shipping
+target = $(service).dev
+
 all: dev
 
-dev:
-	go build -o shipping.dev
+$(target): *.go
+	go build -o $(target)
 
-serve: dev
-	echo "Start shipping service ..."
-	./shipping.dev
+dev: $(target)
+	echo "Start $(service) service ..."
+	./$(target)
