@@ -1,6 +1,7 @@
 module github.com/practigo/hipstershop/paymentservice
 
 require (
+	github.com/google/uuid v1.1.1
 	github.com/practigo/hipstershop v0.1.1
 	github.com/sirupsen/logrus v1.3.0
 	go.opencensus.io v0.19.0

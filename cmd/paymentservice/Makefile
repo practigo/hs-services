@@ -3,7 +3,7 @@ target = $(service).dev
 
 all: dev
 
-$(target): *.go
+$(target): *.go */*.go
 	go build -o $(target)
 
 dev: $(target)

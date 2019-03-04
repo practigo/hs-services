@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/practigo/hipstershop/genproto"
+	cc "github.com/practigo/hipstershop/paymentservice/creditcard"
 )
 
 const (
@@ -37,6 +38,8 @@ func init() {
 	log.Out = os.Stdout
 }
 
+var charger cc.Charger
+
 func main() {
 	port := defaultPort
 	if value, ok := os.LookupEnv("APP_PORT"); ok {
@@ -56,6 +59,9 @@ func main() {
 
 	// Register reflection service on gRPC server.
 	reflection.Register(srv)
+
+	charger = &cc.NoOps{} // TODO: so far it is just a mock
+
 	if err := srv.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
@@ -65,6 +71,19 @@ func main() {
 type server struct{}
 
 func (s *server) Charge(ctx context.Context, req *pb.ChargeRequest) (*pb.ChargeResponse, error) {
-	// TODO: implement here
-	return &pb.ChargeResponse{}, nil
+	log.Info("[Charge] received request")
+	defer log.Info("[Charge] completed request")
+	// convert
+	card := cc.Card{
+		Number: req.CreditCard.CreditCardNumber,
+		Cvv:    req.CreditCard.CreditCardCvv,
+		Exp: cc.Expiration{
+			Year:  int(req.CreditCard.CreditCardExpirationYear),
+			Month: int(req.CreditCard.CreditCardExpirationMonth),
+		},
+	}
+	id, _ := charger.Charge(card)
+	return &pb.ChargeResponse{
+		TransactionId: id,
+	}, nil
 }
