@@ -82,7 +82,7 @@ func (s *server) Charge(ctx context.Context, req *pb.ChargeRequest) (*pb.ChargeR
 			Month: int(req.CreditCard.CreditCardExpirationMonth),
 		},
 	}
-	id, _ := charger.Charge(card)
+	id, _ := charger.Charge(card, req.Amount)
 	return &pb.ChargeResponse{
 		TransactionId: id,
 	}, nil
