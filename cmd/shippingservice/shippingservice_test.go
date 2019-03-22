@@ -15,8 +15,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
 	pb "github.com/practigo/hipstershop/genproto"
@@ -24,7 +26,7 @@ import (
 
 // TestGetQuote is a basic check on the GetQuote RPC service.
 func TestGetQuote(t *testing.T) {
-	s := server{}
+	s := server{lg: &logrus.Logger{Out: ioutil.Discard}}
 
 	// A basic test case to test logic and protobuf interactions.
 	req := &pb.GetQuoteRequest{
@@ -57,7 +59,7 @@ func TestGetQuote(t *testing.T) {
 
 // TestShipOrder is a basic check on the ShipOrder RPC service.
 func TestShipOrder(t *testing.T) {
-	s := server{}
+	s := server{lg: &logrus.Logger{Out: ioutil.Discard}}
 
 	// A basic test case to test logic and protobuf interactions.
 	req := &pb.ShipOrderRequest{
