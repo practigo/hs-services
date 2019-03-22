@@ -3,7 +3,8 @@ package creditcard_test
 import (
 	"testing"
 
-	cc "github.com/practigo/hipstershop/paymentservice/creditcard"
+	pb "github.com/practigo/hipstershop/genproto"
+	cc "github.com/practigo/hs-paymentservice/creditcard"
 )
 
 func TestLuhn(t *testing.T) {
@@ -70,7 +71,7 @@ func TestValidate(t *testing.T) {
 
 func TestCharger(t *testing.T) {
 	c := cc.NoOps{}
-	id, err := c.Charge(cc.Card{})
+	id, err := c.Charge(cc.Card{}, &pb.Money{})
 	if err != nil || len(id) <= 0 {
 		t.Error(id, err)
 	}
