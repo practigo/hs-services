@@ -8,4 +8,7 @@ $(target): *.go */*.go
 
 dev: $(target)
 	echo "Start $(service) service ..."
-	./$(target)
+	ENABLE_DEBUG_MODE=1 ./$(target)
+
+clean:
+	rm $(target)
