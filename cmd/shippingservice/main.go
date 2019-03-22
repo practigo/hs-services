@@ -17,59 +17,33 @@ package main
 import (
 	"fmt"
 	"net"
-	"os"
-	"time"
 
 	"github.com/sirupsen/logrus"
-	"go.opencensus.io/plugin/ocgrpc"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/health"
-	healthpb "google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/reflection"
 
 	pb "github.com/practigo/hipstershop/genproto"
+	"github.com/practigo/hipstershop/infra"
 )
 
 const (
-	defaultPort = "50051"
+	defaultPort = 50051
 )
 
 var log *logrus.Logger
 
-func init() {
-	log = logrus.New()
-	log.Level = logrus.DebugLevel
-	log.Formatter = &logrus.JSONFormatter{
-		FieldMap: logrus.FieldMap{
-			logrus.FieldKeyTime:  "timestamp",
-			logrus.FieldKeyLevel: "severity",
-			logrus.FieldKeyMsg:   "message",
-		},
-		TimestampFormat: time.RFC3339Nano,
-	}
-	log.Out = os.Stdout
-}
-
 func main() {
-	port := defaultPort
-	if value, ok := os.LookupEnv("APP_PORT"); ok {
-		port = value
-	}
-	port = fmt.Sprintf(":%s", port)
+	log = infra.InitLogrus()
 
-	lis, err := net.Listen("tcp", port)
+	addr := fmt.Sprintf(":%d", infra.AppPort(defaultPort))
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	srv := grpc.NewServer(grpc.StatsHandler(&ocgrpc.ServerHandler{}))
-	svc := &server{}
-	pb.RegisterShippingServiceServer(srv, svc)
-	healthpb.RegisterHealthServer(srv, health.NewServer())
-	log.Infof("Shipping Service listening on port %s", port)
 
-	// Register reflection service on gRPC server.
-	reflection.Register(srv)
+	srv := infra.NewServer(infra.WithHealth, infra.WithReflection)
+	pb.RegisterShippingServiceServer(srv, &server{})
+
+	log.Infof("Shipping Service listening on %s", addr)
 	if err := srv.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
